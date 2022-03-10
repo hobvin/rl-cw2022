@@ -125,6 +125,7 @@ class QLearningAgent(Agent):
             max_q = max(self.q_table[(n_obs,a_index)],max_q)
         self.q_table[(obs,action)]=q + self.alpha*(reward + self.gamma*max_q-q)
 
+
         return self.q_table[(obs, action)]
 
     def schedule_hyperparameters(self, timestep: int, max_timestep: int):
