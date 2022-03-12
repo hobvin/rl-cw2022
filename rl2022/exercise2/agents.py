@@ -54,19 +54,22 @@ class Agent(ABC):
         :return (int): index of selected action
         """
         ### PUT YOUR CODE HERE ###
-        max_q=0
+
         best_action=0
+        #for a_index in range(self.n_acts):
+        #    max_q = max(self.q_table[(obs,a_index)],max_q)
+        #for a_index in range(self.n_acts):
+        #    if self.q_table[(obs,a_index)]==max_q:
+        #        best_action = a_index
+        Q=np.zeros([1,self.n_acts])
         for a_index in range(self.n_acts):
-            max_q = max(self.q_table[(obs,a_index)],max_q)
-        for a_index in range(self.n_acts):
-            if self.q_table[(obs,a_index)]==max_q:
-                best_action = a_index
+            Q[0,a_index]=self.q_table[(obs,a_index)]
+        best_action=np.argmax(Q[0])
+        ### RETURN AN ACTION HERE ###
         if random.random() >= self.epsilon:
             return best_action
         else:
             return self.action_space.sample()
-        ### RETURN AN ACTION HERE ###
-        return -1
 
     @abstractmethod
     def schedule_hyperparameters(self, timestep: int, max_timestep: int):
@@ -121,10 +124,11 @@ class QLearningAgent(Agent):
         ### PUT YOUR CODE HERE ###
         q = self.q_table[(obs,action)]
         max_q = 0
+        Q=np.zeros([1,self.n_acts])
         for a_index in range(self.n_acts):
-            max_q = max(self.q_table[(n_obs,a_index)],max_q)
-        self.q_table[(obs,action)]=q + self.alpha*(reward + self.gamma*max_q-q)
-
+            Q[0,a_index]=self.q_table[(n_obs,a_index)]
+        max_q = max(Q[0])
+        self.q_table[(obs,action)]=q + self.alpha*(reward + self.gamma*max_q - q)
 
         return self.q_table[(obs, action)]
 
@@ -140,8 +144,7 @@ class QLearningAgent(Agent):
         :param max_timestep (int): maximum timesteps that the training loop will run for
         """
         ### PUT YOUR CODE HERE ###
-        timestep=timestep+10
-        max_timestep=max_timestep
+        self.epsilon-=self.epsilon/max_timestep
         #raise NotImplementedError("Needed for Q2")
 
 
@@ -182,13 +185,17 @@ class MonteCarloAgent(Agent):
         updated_values = {}
         ### PUT YOUR CODE HERE ###
         G=0
-        First=True
-        for i in reversed(range(len(obses))):
-            if First:
-                First = False
-            else:
-                updated_values[(obses[i],actions[i])]=G
+        for i in reversed(range(len(obses)-1)):
             G = rewards[i+1]+ self.gamma*G
+            if rewards[i+1]>0:
+                1==1
+            if G>0:
+                2==2
+            if (obses[i],actions[i]) not in updated_values.keys():
+                updated_values[(obses[i],actions[i])] = G
+                self.q_table[(obses[i],actions[i])] = np.average(list(updated_values.values()))
+                if self.q_table[(obses[i],actions[i])]>0:
+                    1==1
         return updated_values
 
     def schedule_hyperparameters(self, timestep: int, max_timestep: int):
@@ -203,4 +210,6 @@ class MonteCarloAgent(Agent):
         :param max_timestep (int): maximum timesteps that the training loop will run for
         """
         ### PUT YOUR CODE HERE ###
-        raise NotImplementedError("Needed for Q2")
+        #self.epsilon-=self.epsilon*timestep/max_timestep
+        if timestep%5000==0:
+            self.epsilon-=5000/max_timestep
