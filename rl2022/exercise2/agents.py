@@ -184,18 +184,18 @@ class MonteCarloAgent(Agent):
         """
         updated_values = {}
         ### PUT YOUR CODE HERE ###
-        G=0
+        G: DefaultDict = defaultdict(lambda: 0)
         for i in reversed(range(len(obses)-1)):
-            G = rewards[i+1]+ self.gamma*G
-            if rewards[i+1]>0:
-                1==1
-            if G>0:
-                2==2
-            if (obses[i],actions[i]) not in updated_values.keys():
-                updated_values[(obses[i],actions[i])] = G
-                self.q_table[(obses[i],actions[i])] = np.average(list(updated_values.values()))
-                if self.q_table[(obses[i],actions[i])]>0:
-                    1==1
+            G[(obses[i],actions[i])] = rewards[i+1]+ self.gamma*G[(obses[i],actions[i])]
+        for i in range(len(obses)):
+            if (obses[i],actions[i]) not in self.sa_counts.keys():
+                self.sa_counts[(obses[i],actions[i])]=1
+            else:
+                self.sa_counts[(obses[i],actions[i])]+=1
+            if (obses[i],actions[i]) not in list(updated_values.keys())[:i]:
+                updated_values[(obses[i],actions[i])]=G[(obses[i],actions[i])]
+                #updated_values[(obses[i],actions[i])]=G[(obses[i],actions[i])]]/self.sa_counts[(obses[i],actions[i])]
+                self.q_table[(obses[i],actions[i])] = (self.q_table[(obses[i],actions[i])]*(self.sa_counts[(obses[i],actions[i])] - 1) + G[(obses[i],actions[i])])/self.sa_counts[(obses[i],actions[i])]
         return updated_values
 
     def schedule_hyperparameters(self, timestep: int, max_timestep: int):
@@ -210,6 +210,7 @@ class MonteCarloAgent(Agent):
         :param max_timestep (int): maximum timesteps that the training loop will run for
         """
         ### PUT YOUR CODE HERE ###
-        #self.epsilon-=self.epsilon*timestep/max_timestep
-        if timestep%5000==0:
-            self.epsilon-=5000/max_timestep
+        max_deduct, decay = 0.95, 0.07
+        self.epsilon = 1.0 - (min(1.0, timestep / (decay * max_timestep))) * max_deduct
+        #self.epsilon = max((1+timestep/max_timestep)**-7,0.05)
+        self.gamma = min(0.8+2*timestep/max_timestep,0.995)

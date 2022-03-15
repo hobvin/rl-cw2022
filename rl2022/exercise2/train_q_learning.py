@@ -35,7 +35,7 @@ def q_learning_eval(
         obs_space=env.observation_space,
         gamma=config["gamma"],
         alpha=config["alpha"],
-        epsilon=config["epsilon"],
+        epsilon=0.0,
     )
     eval_agent.q_table = q_table
     return evaluate(env, eval_agent, config["eval_eps_max_steps"], config["eval_episodes"], render)

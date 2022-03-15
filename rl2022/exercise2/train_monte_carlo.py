@@ -8,7 +8,9 @@ from tqdm import tqdm
 CONFIG = {
     "eval_episodes": 500,
     "eval_freq": 5000,
-    "epsilon": 1.0,
+    "epsilon": 0.9,
+    "total_eps":30000,
+    "eps_max_steps":100,
 }
 CONFIG.update(CONSTANTS)
 
@@ -32,7 +34,7 @@ def monte_carlo_eval(
         action_space=env.action_space,
         obs_space=env.observation_space,
         gamma=CONFIG["gamma"],
-        epsilon=CONFIG["epsilon"],
+        epsilon=0.0,
     )
     eval_agent.q_table = q_table
     return evaluate(env, eval_agent, config["eval_eps_max_steps"], config["eval_episodes"], render)
