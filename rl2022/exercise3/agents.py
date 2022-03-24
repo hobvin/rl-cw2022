@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from ast import Pass
 from copy import deepcopy
 import gym
 import numpy as np
@@ -188,7 +189,17 @@ class DQN(Agent):
         :return (sample from self.action_space): action the agent should perform
         """
         ### PUT YOUR CODE HERE ###
-        raise NotImplementedError("Needed for Q3")
+        # call the fully connected neural network function
+        # self.critics_net
+        # the input of it should be a tensor
+        state = torch.from_numpy(np.array([obs])).float() # transfer the obs into tensor as state
+        q_state = self.critics_net(state).numpy() # convert the output state into ny.ndarray
+        best_action = np.argmax(q_state) # the best action with highest q value
+        random_action = np.random.choice(q_state.size) # uniformly choose an action
+        if explore and np.random.random() < self.epsilon:
+            return random_action
+        else:  # Otherwise, agents should follow the greedy policy
+            return best_action
 
     def update(self, batch: Transition) -> Dict[str, float]:
         """Update function for DQN
