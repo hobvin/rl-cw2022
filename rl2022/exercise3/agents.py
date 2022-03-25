@@ -214,7 +214,9 @@ class DQN(Agent):
         :return (Dict[str, float]): dictionary mapping from loss names to loss values
         """
         ### PUT YOUR CODE HERE ###
-        raise NotImplementedError("Needed for Q3")
+        # raise NotImplementedError("Needed for Q3")
+        self.update_counter+=1 # update counter
+        state, action, next_state, reward, done = batch
         q_loss = 0.0
         return {"q_loss": q_loss}
 
