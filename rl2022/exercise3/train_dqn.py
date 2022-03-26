@@ -4,7 +4,8 @@ import time
 from tqdm import tqdm
 from typing import List, Tuple
 import matplotlib.pyplot as plt
-
+import sys
+sys.path.append(r'M:\Postgraduate\RL\rl-cw2022')
 from rl2022.constants import EX3_DQN_CARTPOLE_CONSTANTS as CARTPOLE_CONSTANTS
 from rl2022.constants import EX3_LUNARLANDER_CONSTANTS as LUNARLANDER_CONSTANTS
 from rl2022.exercise3.agents import DQN

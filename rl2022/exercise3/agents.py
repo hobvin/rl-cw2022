@@ -128,10 +128,11 @@ class DQN(Agent):
 
         STATE_SIZE = observation_space.shape[0]
         ACTION_SIZE = action_space.n
-
+        
         # ######################################### #
         #  BUILD YOUR NETWORKS AND OPTIMIZERS HERE  #
         # ######################################### #
+        self.loss = torch.nn.MSELoss()
         self.critics_net = FCNetwork(
             (STATE_SIZE, *hidden_size, ACTION_SIZE), output_activation=None
         )
@@ -173,8 +174,13 @@ class DQN(Agent):
         :param max_timestep (int): maximum timesteps that the training loop will run for
         """
         ### PUT YOUR CODE HERE ###
-        raise NotImplementedError("Needed for Q3")
-
+        max_deduct, decay = 0.95, 0.07
+        self.epsilon = 1.0 - (min(1.0, timestep / (decay * max_timestep))) * max_deduct
+        # self.update_mode = "hard"
+        self.update_mode = "soft"
+        self.soft_update_tua = 0.6
+        # self.gamma = 1.0
+        return
     def act(self, obs: np.ndarray, explore: bool):
         """Returns an action (should be called at every timestep)
 
@@ -186,14 +192,16 @@ class DQN(Agent):
 
         :param obs (np.ndarray): observation vector from the environment
         :param explore (bool): flag indicating whether we should explore
-        :return (sample from self.action_space): action the agent should perform
+        :rerror("Needed for Q3")
+        timestep = timestepturn (sample from self.action_space): action the agent should perform
         """
         ### PUT YOUR CODE HERE ###
         # call the fully connected neural network function
         # self.critics_net
         # the input of it should be a tensor
+        
         state = torch.from_numpy(np.array([obs])).float() # transfer the obs into tensor as state
-        q_state = self.critics_net(state).numpy() # convert the output state into ny.ndarray
+        q_state = self.critics_net(state).detach().numpy() # convert the output state into ny.ndarray
         best_action = np.argmax(q_state) # the best action with highest q value
         random_action = np.random.choice(q_state.size) # uniformly choose an action
         if explore and np.random.random() < self.epsilon:
@@ -214,10 +222,22 @@ class DQN(Agent):
         :return (Dict[str, float]): dictionary mapping from loss names to loss values
         """
         ### PUT YOUR CODE HERE ###
-        # raise NotImplementedError("Needed for Q3")
-        self.update_counter+=1 # update counter
-        state, action, next_state, reward, done = batch
         q_loss = 0.0
+        self.update_counter+=1 # update counter
+        state, action, next_state, reward, done = batch # sampled random minibatch of transitions
+        
+        # preprocess Φ_t+1 = Φ(s_t+1)
+        tgt_q_state_next = self.critics_target(next_state)
+        # max q
+        tgt_q_max = tgt_q_state_next.max(axis=1)[0].detach()
+        y = reward + (self.gamma * tgt_q_max) * (1-done)
+        q = self.critics_net(state).gather(dim=1, index=action.long())
+        q_loss = self.loss(q, y)
+        q_loss.backward()
+        self.critics_optim.step()
+        if self.update_counter % self.target_update_freq == 0:
+            self.critics_target.hard_update(self.critics_net)
+        q_loss = q_loss.detach().numpy()
         return {"q_loss": q_loss}
 
 

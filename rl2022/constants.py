@@ -35,7 +35,7 @@ EX3_LUNARLANDER_CONSTANTS = {
     "max_timesteps": 300000,
     "episode_length": 500,
     "max_time": 120 * 60,
-    "save_filename": "dqn_lunarlander_latest.pt",
+    "save_filename": "./dqn_lunarlander_latest.pt",
 }
 
 EX4_PENDULUM_CONSTANTS = {
