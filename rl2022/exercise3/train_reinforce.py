@@ -3,17 +3,18 @@ import numpy as np
 import time
 from tqdm import tqdm
 from typing import List, Tuple
-
+import sys
+sys.path.append(r'M:\Postgraduate\RL\rl-cw2022')
 from rl2022.constants import EX3_REINFORCE_CARTPOLE_CONSTANTS as CARTPOLE_CONSTANTS
 from rl2022.exercise3.agents import Reinforce
 
 RENDER = False # FALSE FOR FASTER TRAINING / TRUE TO VISUALIZE ENVIRONMENT DURING EVALUATION
 
 CARTPOLE_CONFIG = {
-    "eval_freq": 10000,
+    "eval_freq": 200,
     "eval_episodes": 20,
     "hidden_size": (16, 16),
-    "learning_rate": 1e-2,
+    "learning_rate": 1e-4,
 }
 CARTPOLE_CONFIG.update(CARTPOLE_CONSTANTS)
 

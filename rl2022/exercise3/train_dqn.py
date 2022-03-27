@@ -26,14 +26,14 @@ LUNARLANDER_CONFIG = {
 LUNARLANDER_CONFIG.update(LUNARLANDER_CONSTANTS)
 
 CARTPOLE_CONFIG = {
-    "eval_freq": 2000,
+    "eval_freq": 300,
     "eval_episodes": 20,
-    "learning_rate": 1e-2,
+    "learning_rate": 1e-4,
     "hidden_size": (128, 64),
-    "target_update_freq": 5000,
+    "target_update_freq": 2000,
     "batch_size": 16,
     "buffer_capacity": int(1e6),
-    "plot_loss": False, # SET TRUE FOR 3.3 (Understanding the Loss)
+    "plot_loss": True, # SET TRUE FOR 3.3 (Understanding the Loss)
 }
 CARTPOLE_CONFIG.update(CARTPOLE_CONSTANTS)
 
@@ -169,8 +169,8 @@ def train(env: gym.Env, config, output: bool = True) -> Tuple[List[float], List[
         losses = np.array(losses_all)
         x_values = config["batch_size"] + np.arange(len(losses))
         plt.plot(x_values, losses, "-", alpha=0.7)
-        plt.xlabel("Timesteps", fontsize=30)
-        plt.ylabel("DQN Loss", fontsize=30)
+        plt.xlabel("Timesteps", fontsize=10)
+        plt.ylabel("DQN Loss", fontsize=10)
         plt.xticks(fontsize=25)
         plt.yticks(fontsize=25)
         plt.tight_layout(pad=0.3)

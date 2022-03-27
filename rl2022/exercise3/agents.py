@@ -174,13 +174,9 @@ class DQN(Agent):
         :param max_timestep (int): maximum timesteps that the training loop will run for
         """
         ### PUT YOUR CODE HERE ###
-        max_deduct, decay = 0.95, 0.07
-        self.epsilon = 1.0 - (min(1.0, timestep / (decay * max_timestep))) * max_deduct
-        # self.update_mode = "hard"
-        self.update_mode = "soft"
-        self.soft_update_tua = 0.6
-        # self.gamma = 1.0
-        return
+        max_deduct, decay = 0.95, 1.0
+        self.epsilon = 1.0 - (min(1.0, decay * timestep / max_timestep)) * max_deduct
+        self.gamma = 1.0
     def act(self, obs: np.ndarray, explore: bool):
         """Returns an action (should be called at every timestep)
 
@@ -222,15 +218,15 @@ class DQN(Agent):
         :return (Dict[str, float]): dictionary mapping from loss names to loss values
         """
         ### PUT YOUR CODE HERE ###
-        q_loss = 0.0
         self.update_counter+=1 # update counter
         state, action, next_state, reward, done = batch # sampled random minibatch of transitions
-        
+        self.critics_optim.zero_grad()
         # preprocess Φ_t+1 = Φ(s_t+1)
         tgt_q_state_next = self.critics_target(next_state)
         # max q
-        tgt_q_max = tgt_q_state_next.max(axis=1)[0].detach()
-        y = reward + (self.gamma * tgt_q_max) * (1-done)
+        tgt_q_max = tgt_q_state_next.max(axis=1)[0].detach().unsqueeze(axis=1)
+        
+        y = reward + self.gamma * tgt_q_max * (1-done)
         q = self.critics_net(state).gather(dim=1, index=action.long())
         q_loss = self.loss(q, y)
         q_loss.backward()
@@ -312,7 +308,9 @@ class Reinforce(Agent):
         :param max_timestep (int): maximum timesteps that the training loop will run for
         """
         ### PUT YOUR CODE HERE ###
-        raise NotImplementedError("Needed for Q3")
+        max_deduct, decay = 0.95, 1.0
+        self.epsilon = 1.0 - (min(1.0, decay * timestep / max_timesteps)) * max_deduct
+        self.gamma = 1.0
 
     def act(self, obs: np.ndarray, explore: bool):
         """Returns an action (should be called at every timestep)
@@ -327,7 +325,15 @@ class Reinforce(Agent):
         :return (sample from self.action_space): action the agent should perform
         """
         ### PUT YOUR CODE HERE ###
-        raise NotImplementedError("Needed for Q3")
+        # convert the np.array state into tensor
+        state = Tensor(obs)
+
+        # calculate the probability of state from policy
+        prob = self.policy(state)
+        # dist = torch.nn.functional.softmax(prob, dim=-1)
+        acts_distribution = Categorical(prob)
+        action = acts_distribution.sample()
+        return action.item()
 
     def update(
         self, rewards: List[float], observations: List[np.ndarray], actions: List[int],
@@ -343,6 +349,23 @@ class Reinforce(Agent):
             losses
         """
         ### PUT YOUR CODE HERE ###
-        raise NotImplementedError("Needed for Q3")
         p_loss = 0.0
+        G = []
+        for reward in rewards:
+            g = 0
+            g = reward + g*self.gamma
+            G.append(g)
+        G = list(reversed(G))
+        T = len(rewards)
+
+        for i in range(len(rewards)):
+            probs = self.policy.forward(Tensor(observations[i]))
+            dist = torch.nn.functional.softmax(probs, dim=-1)
+            m = Categorical(dist)
+            p_loss -= m.log_prob(torch.FloatTensor([actions[i]])) * G[i]
+
+        self.policy_optim.zero_grad()
+        p_loss.backward()
+        self.policy_optim.step()
+
         return {"p_loss": p_loss}

@@ -1,6 +1,7 @@
 import gym
 from typing import List, Tuple
-
+import sys
+sys.path.append(r'M:\Postgraduate\RL\rl-cw2022')
 from rl2022.exercise3.agents import DQN
 from rl2022.exercise3.train_dqn import LUNARLANDER_CONFIG, play_episode
 
