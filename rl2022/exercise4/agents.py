@@ -1,4 +1,5 @@
 import os
+# from sysclog import LOG_SYSLOG
 import gym
 import numpy as np
 from torch.optim import Adam
@@ -9,7 +10,7 @@ from torch.autograd import Variable
 from torch.distributions import Normal
 
 from rl2022.exercise3.agents import Agent
-from rl2022.exercise3.networks import FCNetwork
+from rl2022.exercise3.networks import FCNetwork, Tanh2
 from rl2022.exercise3.replay import Transition
 
 
@@ -95,7 +96,7 @@ class DDPG(Agent):
 
         ### PUT YOUR CODE HERE ###
         I = torch.ones(ACTION_SIZE)
-        self.eta = torch.normal(0,0.1 * I)
+        self.eta = Normal(0,0.1 * I).sample()
         # raise NotImplementedError("Needed for Q4")
 
         # ############################### #
@@ -152,7 +153,8 @@ class DDPG(Agent):
         :param max_timestep (int): maximum timesteps that the training loop will run for
         """
         ### PUT YOUR CODE HERE ###
-        raise NotImplementedError("Needed for Q4")
+        # max_deduct, decay = 0.95, 0.07
+        # self.epsilon = 1.0 - (min(1.0, timestep / (decay * max_timesteps))) * max_deduct
 
     def act(self, obs: np.ndarray, explore: bool):
         """Returns an action (should be called at every timestep)
@@ -176,7 +178,7 @@ class DDPG(Agent):
         actions = self.actor(states).detach().numpy()
         if explore:
             # use noise
-            new_actions = actions + self.eta
+            new_actions = actions[0] + self.eta
             new_actions.clamp(min=-2,max=2)
             return new_actions
         if not explore:
@@ -202,6 +204,37 @@ class DDPG(Agent):
         p_loss = 0.0
         obs, action, nobs, rewards, done = batch
         
+        with torch.no_grad():
+            nact = self.actor_target(nobs)
+            ncat_act_obs = torch.cat((nact,nobs),dim=1)  
+            n_q_value = self.critic_target(ncat_act_obs)
+        y = rewards + self.gamma*(1-done)*n_q_value
+        
+        # q_loss
+        cat_act_obs = torch.cat((action,obs),dim=1)
+        q = self.critic(cat_act_obs)
+        mseloss = torch.nn.MSELoss()
+        q_loss = mseloss(y,q)
+        self.critic_optim.zero_grad()
+        q_loss.backward()
+        self.critic_optim.step()
+        #q_loss = float(q_loss)
+        
+        # p_loss
+        act = self.actor(obs)
+        cat_act_obs = torch.cat((act,obs),dim=1)
+        p_loss = -1*self.critic(cat_act_obs)
+        
+        self.policy_optim.zero_grad()
+        p_loss = torch.mean(p_loss)
+        p_loss.backward()
+        self.policy_optim.step()
+        p_loss=float(p_loss)
+
+        # update parameters
+        self.critic_target.soft_update(self.critic, self.tau)
+        self.actor_target.soft_update(self.actor, self.tau)
+
         return {
             "q_loss": q_loss,
             "p_loss": p_loss,

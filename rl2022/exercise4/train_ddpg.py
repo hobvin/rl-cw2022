@@ -4,7 +4,8 @@ import time
 from tqdm import tqdm
 from typing import List, Tuple
 import matplotlib.pyplot as plt
-
+import sys
+sys.path.append(r'M:\Postgraduate\RL\rl-cw2022')
 from rl2022.constants import EX4_PENDULUM_CONSTANTS as PENDULUM_CONSTANTS
 from rl2022.constants import EX4_BIPEDAL_CONSTANTS as BIPEDAL_CONSTANTS
 from rl2022.exercise4.agents import DDPG
@@ -26,20 +27,20 @@ PENDULUM_CONFIG = {
 PENDULUM_CONFIG.update(PENDULUM_CONSTANTS)
 
 BIPEDAL_CONFIG = {
-    "eval_freq": 20000,
+    "eval_freq": 2000,
     "eval_episodes": 3,
-    "policy_learning_rate": 1e-2,
-    "critic_learning_rate": 1e-2,
-    "critic_hidden_size": [32, 32],
-    "policy_hidden_size": [32, 32],
-    "tau": 0.05,
-    "batch_size": 32,
+    "policy_learning_rate": 1e-1, # 1e-3
+    "critic_learning_rate": 1e-1, # 1e-3
+    "critic_hidden_size": [648, 648],
+    "policy_hidden_size": [648, 648],
+    "tau": 0.15,
+    "batch_size": 128,
     "buffer_capacity": int(1e6),
 }
 BIPEDAL_CONFIG.update(BIPEDAL_CONSTANTS)
 
-CONFIG = PENDULUM_CONFIG
-# CONFIG = BIPEDAL_CONFIG
+# CONFIG = PENDULUM_CONFIG
+CONFIG = BIPEDAL_CONFIG
 
 
 def play_episode(
