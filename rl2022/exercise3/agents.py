@@ -350,22 +350,16 @@ class Reinforce(Agent):
         """
         ### PUT YOUR CODE HERE ###
         p_loss = 0.0
-        G = []
-        for reward in rewards:
-            g = 0
-            g = reward + g*self.gamma
-            G.append(g)
-        G = list(reversed(G))
         T = len(rewards)
-
-        for i in range(len(rewards)):
-            probs = self.policy.forward(Tensor(observations[i]))
-            dist = torch.nn.functional.softmax(probs, dim=-1)
-            m = Categorical(dist)
-            p_loss -= m.log_prob(torch.FloatTensor([actions[i]])) * G[i]
-
+        G=0
+        obs = torch.tensor(np.array(observations), dtype = torch.float32)
+        for t in range(T-1,-1,-1):
+            G = self.gamma * G + rewards[t]
+            p=self.policy.forward(obs[t])[actions[t]]
+            p_log = torch.log(p)
+            p_loss-=G * p_log
+        p_loss = p_loss/T
         self.policy_optim.zero_grad()
         p_loss.backward()
         self.policy_optim.step()
-
         return {"p_loss": p_loss}

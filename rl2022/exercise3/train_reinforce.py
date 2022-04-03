@@ -11,10 +11,12 @@ from rl2022.exercise3.agents import Reinforce
 RENDER = False # FALSE FOR FASTER TRAINING / TRUE TO VISUALIZE ENVIRONMENT DURING EVALUATION
 
 CARTPOLE_CONFIG = {
-    "eval_freq": 200,
+    "eval_freq": 5000,
     "eval_episodes": 20,
     "hidden_size": (16, 16),
-    "learning_rate": 1e-4,
+    "learning_rate": 7e-4,
+    "episode_length": 200,
+    "max_time": 30 * 60,
 }
 CARTPOLE_CONFIG.update(CARTPOLE_CONSTANTS)
 

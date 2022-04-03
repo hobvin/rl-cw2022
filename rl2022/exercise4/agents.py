@@ -94,7 +94,9 @@ class DDPG(Agent):
         # ################################################### #
 
         ### PUT YOUR CODE HERE ###
-        raise NotImplementedError("Needed for Q4")
+        I = torch.ones(ACTION_SIZE)
+        self.eta = torch.normal(0,0.1 * I)
+        # raise NotImplementedError("Needed for Q4")
 
         # ############################### #
         # WRITE ANY AGENT PARAMETERS HERE #
@@ -166,7 +168,20 @@ class DDPG(Agent):
         :return (sample from self.action_space): action the agent should perform
         """
         ### PUT YOUR CODE HERE ###
-        raise NotImplementedError("Needed for Q4")
+        # raise NotImplementedError("Needed for Q4")
+        
+        # convert obs to tensor
+        states = torch.from_numpy(np.array(obs)).float()
+        # Use FCNN actor to map states to actions 
+        actions = self.actor(states).detach().numpy()
+        if explore:
+            # use noise
+            new_actions = actions + self.eta
+            new_actions.clamp(min=-2,max=2)
+            return new_actions
+        if not explore:
+            # greedy
+            return actions
 
     def update(self, batch: Transition) -> Dict[str, float]:
         """Update function for DQN
@@ -181,10 +196,12 @@ class DDPG(Agent):
         :return (Dict[str, float]): dictionary mapping from loss names to loss values
         """
         ### PUT YOUR CODE HERE ###
-        raise NotImplementedError("Needed for Q4")
+        # raise NotImplementedError("Needed for Q4")
 
         q_loss = 0.0
         p_loss = 0.0
+        obs, action, nobs, rewards, done = batch
+        
         return {
             "q_loss": q_loss,
             "p_loss": p_loss,
