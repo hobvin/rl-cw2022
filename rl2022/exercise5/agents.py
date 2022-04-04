@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from collections import defaultdict
 import random
 from typing import List, Dict, DefaultDict
-
+import numpy as np
 from gym.spaces import Space
 from gym.spaces.utils import flatdim
 
@@ -100,7 +100,15 @@ class IndependentQLearningAgents(MultiAgent):
         """
         actions = []
         ### PUT YOUR CODE HERE ###
-        raise NotImplementedError("Needed for Q5")
+        for i in range(self.num_agents):
+            if np.random.random() < self.epsilon:
+                act = np.random.randint(0,self.n_acts,1,dtype=int)
+                # print(act)
+                actions.append(act[0])
+            else:
+                q_dict = self.q_tables[i]
+                print(q_dict)
+                input()
         return actions
 
     def learn(
@@ -117,7 +125,7 @@ class IndependentQLearningAgents(MultiAgent):
         """
         updated_values = []
         ### PUT YOUR CODE HERE ###
-        raise NotImplementedError("Needed for Q5")
+        #raise NotImplementedError("Needed for Q5")
         return updated_values
 
     def schedule_hyperparameters(self, timestep: int, max_timestep: int):
@@ -132,7 +140,7 @@ class IndependentQLearningAgents(MultiAgent):
         :param max_timestep (int): maximum timesteps that the training loop will run for
         """
         ### PUT YOUR CODE HERE ###
-        raise NotImplementedError("Needed for Q5")
+
 
 
 class JointActionLearning(MultiAgent):

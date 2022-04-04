@@ -1,7 +1,8 @@
 import copy
 
 import gym
-
+import sys
+sys.path.append(r'M:\Postgraduate\RL\rl-cw2022')
 from rl2022.constants import EX5_PENALTY_CONSTANTS as PENALTY_CONSTANTS
 from rl2022.constants import EX5_CLIMBING_CONSTANTS as CLIMBING_CONSTANTS
 from rl2022.exercise5.agents import IndependentQLearningAgents

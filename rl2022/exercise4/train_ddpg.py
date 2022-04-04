@@ -27,15 +27,15 @@ PENDULUM_CONFIG = {
 PENDULUM_CONFIG.update(PENDULUM_CONSTANTS)
 
 BIPEDAL_CONFIG = {
-    "eval_freq": 2000,
+    "eval_freq": 20000,
     "eval_episodes": 3,
-    "policy_learning_rate": 1e-1, # 1e-3
-    "critic_learning_rate": 1e-1, # 1e-3
-    "critic_hidden_size": [648, 648],
-    "policy_hidden_size": [648, 648],
-    "tau": 0.15,
-    "batch_size": 128,
-    "buffer_capacity": int(1e6),
+    "policy_learning_rate": 1e-4, # 1e-3
+    "critic_learning_rate": 1e-4, # 1e-3
+    "critic_hidden_size": [1000, 1000],
+    "policy_hidden_size": [1000, 1000],
+    "tau": 0.05,
+    "batch_size": 600,
+    "buffer_capacity": int(1e8),
 }
 BIPEDAL_CONFIG.update(BIPEDAL_CONSTANTS)
 
