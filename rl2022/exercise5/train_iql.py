@@ -12,7 +12,7 @@ from rl2022.exercise5.matrix_game import create_penalty_game, create_climbing_ga
 
 PEN_CONFIG = {
     "eval_freq": 100,
-    "lr": 0.05,
+    "lr": 0.07,
     "epsilon": 0.9,
 }
 PEN_CONFIG.update(PENALTY_CONSTANTS)

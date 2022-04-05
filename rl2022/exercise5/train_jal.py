@@ -1,7 +1,8 @@
 import copy
 
 import gym
-
+import sys
+sys.path.append(r'M:\Postgraduate\RL\rl-cw2022')
 from rl2022.constants import EX5_PENALTY_CONSTANTS as PENALTY_CONSTANTS
 from rl2022.constants import EX5_CLIMBING_CONSTANTS as CLIMBING_CONSTANTS
 from rl2022.exercise5.agents import JointActionLearning
@@ -11,7 +12,7 @@ from rl2022.exercise5.matrix_game import create_penalty_game, create_climbing_ga
 
 PEN_CONFIG = {
     "eval_freq": 100,
-    "lr": 0.005,
+    "lr": 0.05,
     "epsilon": 0.9,
 }
 PEN_CONFIG.update(PENALTY_CONSTANTS)

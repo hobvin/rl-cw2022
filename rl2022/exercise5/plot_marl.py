@@ -1,7 +1,8 @@
 import random
 
 import numpy as np
-
+import sys
+sys.path.append(r'M:\Postgraduate\RL\rl-cw2022')
 from rl2022.exercise5.agents import IndependentQLearningAgents, JointActionLearning
 from rl2022.exercise5.utils import visualise_both_q_convergence
 from rl2022.exercise5.matrix_game import create_penalty_game, create_climbing_game
