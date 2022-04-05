@@ -101,14 +101,13 @@ class IndependentQLearningAgents(MultiAgent):
         actions = []
         ### PUT YOUR CODE HERE ###
         for i in range(self.num_agents):
-            if np.random.random() < self.epsilon:
+            if np.random.random() < self.epsilon or len(self.q_tables[i])==0:
                 act = np.random.randint(0,self.n_acts,1,dtype=int)
                 # print(act)
                 actions.append(act[0])
             else:
-                q_dict = self.q_tables[i]
-                print(q_dict)
-                input()
+                q_table = self.q_tables[i]
+                actions.append(max(q_table, key=q_table.get))
         return actions
 
     def learn(
@@ -126,6 +125,17 @@ class IndependentQLearningAgents(MultiAgent):
         updated_values = []
         ### PUT YOUR CODE HERE ###
         #raise NotImplementedError("Needed for Q5")
+        for i in range(self.num_agents):
+            q_table = self.q_tables[i]
+            q = q_table[actions[i]]
+            max_q = 0
+            Q=np.zeros([1,self.n_acts[0]])
+            for a_index in range(int(self.n_acts[0])):
+                Q[0,a_index]=q_table[a_index]
+            max_q = max(Q[0])
+            q_table[actions[i]]=q + self.learning_rate*(rewards[i] + self.gamma*max_q - q)
+            #q_table[i] = q + self.learning_rate*(rewards[i] - q)
+            self.q_tables[i] = q_table
         return updated_values
 
     def schedule_hyperparameters(self, timestep: int, max_timestep: int):
@@ -140,8 +150,11 @@ class IndependentQLearningAgents(MultiAgent):
         :param max_timestep (int): maximum timesteps that the training loop will run for
         """
         ### PUT YOUR CODE HERE ###
-
-
+        max_deduct, decay = 0.95, 0.07
+        #self.learning_rate = 1.0 - (min(1.0, timestep / (decay * max_timestep))) * max_deduct
+        self.epsilon = 1.0 - (min(1.0, timestep / (decay * max_timestep))) * max_deduct
+        self.learning_rate = max(0.07-0.007*timestep/max_timestep,0.01)
+        self.gamma = 0.5 - (min(0.5, timestep / (decay * max_timestep))) * max_deduct
 
 class JointActionLearning(MultiAgent):
     """
@@ -175,7 +188,6 @@ class JointActionLearning(MultiAgent):
         # initialise models for each agent mapping state to other agent actions to count of other agent action
         # in state
         self.models = [defaultdict(lambda: 0) for _ in range(self.num_agents)] 
-
     def act(self) -> List[int]:
         """Implement the epsilon-greedy action selection here for stateless task
 
@@ -185,7 +197,29 @@ class JointActionLearning(MultiAgent):
         """
         joint_action = []
         ### PUT YOUR CODE HERE ###
-        raise NotImplementedError("Needed for Q5")
+        # raise NotImplementedError("Needed for Q5")
+        if self.num_agents == 0:
+            ev = 0                
+        for i in range(self.num_agents):
+            q_table = self.q_tables[i]
+            ev = 1
+            if random.random() < self.epsilon or ev == 0:
+                joint_action.append(np.random.randint(0,self.n_acts,1,dtype=int)[0])
+            else:
+                for self_action in range(self.action_spaces[0].n):
+                    exp_vals = 0
+                    evs = []
+                    for others_action in range(self.action_spaces[0].n):
+                        for n_others_action in range(self.action_spaces[0].n):
+                            if self.models[i][n_others_action]==0:
+                                exp_vals=0
+                            else:
+                                action_comb = (self_action, others_action)
+                                exp_vals += (self.models[i][others_action] / self.models[i][n_others_action]) * q_table[action_comb]
+                    evs.append(exp_vals)
+                ev_max = max(evs)
+                acts = [index for index, exp in enumerate(evs) if exp == ev_max]
+                joint_action.append(random.choice(acts))
         return joint_action
 
     def learn(
@@ -202,7 +236,26 @@ class JointActionLearning(MultiAgent):
         """
         updated_values = []
         ### PUT YOUR CODE HERE ###
-        raise NotImplementedError("Needed for Q5")
+        for i in range(self.num_agents):
+            self_action = actions[i]
+            others_action = actions[1-i]
+            q_table = self.q_tables[i]
+            self.models[i][others_action]+=1 if self.models[i][others_action] else 1
+            q_val = q_table[(self_action,others_action)]
+            evs=[]
+            for n_self_action in range(self.n_acts[i]):
+                ev=0
+                for n_others_action in range(self.n_acts[i]):
+                    if self.models[i][n_others_action] == 0:
+                        ev = 0
+                    else:
+                        action_comb = (n_self_action, n_others_action)
+                        ev+=(self.models[i][others_action]/self.models[i][n_others_action]) * q_table[action_comb]
+                evs.append(ev)
+            ev_max = max(evs) if not dones[i] else 0
+            q_table[tuple(actions)] = q_val + self.learning_rate*(rewards[i] + self.gamma * ev_max - q_val)
+            self.q_tables[i]=q_table
+            updated_values.append(q_table[tuple(actions)])
         return updated_values
 
     def schedule_hyperparameters(self, timestep: int, max_timestep: int):
@@ -217,4 +270,8 @@ class JointActionLearning(MultiAgent):
         :param max_timestep (int): maximum timesteps that the training loop will run for
         """
         ### PUT YOUR CODE HERE ###
-        raise NotImplementedError("Needed for Q5")
+        max_deduct, decay = 0.95, 0.07
+        #self.learning_rate = 1.0 - (min(1.0, timestep / (decay * max_timestep))) * max_deduct
+        self.epsilon = 1.0 - (min(1.0, timestep / (decay * max_timestep))) * max_deduct
+        self.learning_rate = max(0.005-0.0005*timestep/max_timestep,0.001)
+        self.gamma = 0.8 - (min(0.8, timestep / (decay * max_timestep))) * max_deduct
