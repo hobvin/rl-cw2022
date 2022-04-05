@@ -7,6 +7,8 @@ are of correct type/shape
 import pytest
 import gym
 import numpy as np
+import sys
+sys.path.append(r'M:\Postgraduate\RL\rl-cw2022')
 from rl2022.exercise5.agents import IndependentQLearningAgents, JointActionLearning
 from rl2022.exercise5.matrix_game import MatrixGame
 

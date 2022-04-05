@@ -1,5 +1,6 @@
 import sys
 sys.path.append(r"F:\Study\Postgraduate\RL\CW\uoe-rl2022")
+sys.path.append(r'M:\Postgraduate\RL\rl-cw2022')
 from abc import ABC, abstractmethod
 import numpy as np
 from typing import List, Tuple, Dict, Optional, Hashable

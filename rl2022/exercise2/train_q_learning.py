@@ -1,6 +1,7 @@
 import gym
 from tqdm import tqdm
-
+import sys
+sys.path.append(r'M:\Postgraduate\RL\rl-cw2022')
 from rl2022.constants import EX2_QL_CONSTANTS as CONSTANTS
 from rl2022.exercise2.agents import QLearningAgent
 from rl2022.exercise2.utils import evaluate

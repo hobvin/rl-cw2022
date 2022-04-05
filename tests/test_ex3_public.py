@@ -8,7 +8,8 @@ import pytest
 import gym
 import os.path
 import numpy as np
-
+import sys
+sys.path.append(r'M:\Postgraduate\RL\rl-cw2022')
 def test_imports_0():
     from rl2022.exercise3 import DQN, Reinforce, ReplayBuffer
     from rl2022.exercise3.train_dqn import CARTPOLE_CONFIG as DQN_CARTPOLE_CONFIG

@@ -1,16 +1,17 @@
 import gym
-
+import sys
+sys.path.append(r'M:\Postgraduate\RL\rl-cw2022')
 from rl2022.constants import EX2_MC_CONSTANTS as CONSTANTS
 from rl2022.exercise2.agents import MonteCarloAgent
 from rl2022.exercise2.utils import evaluate
 from tqdm import tqdm
 
 CONFIG = {
-    "eval_episodes": 500,
+    "eval_episodes": 200,
     "eval_freq": 5000,
     "epsilon": 0.9,
     "total_eps":30000,
-    "eps_max_steps":100,
+    "eps_max_steps":1000,
 }
 CONFIG.update(CONSTANTS)
 

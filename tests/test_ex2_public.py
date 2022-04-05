@@ -6,6 +6,8 @@ are of correct type/shape
 
 import pytest
 import numpy as np
+import sys
+sys.path.append(r'M:\Postgraduate\RL\rl-cw2022')
 from rl2022.exercise1 import MDP, Transition
 from rl2022.exercise1 import ValueIteration, PolicyIteration
 from rl2022.exercise2 import QLearningAgent, MonteCarloAgent
