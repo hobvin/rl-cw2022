@@ -15,16 +15,14 @@ from rl2022.exercise3.replay import Transition
 
 
 class DDPG(Agent):
-    """DDPG agent
-
-    **YOU NEED TO IMPLEMENT FUNCTIONS IN THIS CLASS**
-
-    :attr critic (FCNetwork): fully connected critic network
-    :attr critic_optim (torch.optim): PyTorch optimiser for critic network
-    :attr policy (FCNetwork): fully connected actor network for policy
-    :attr policy_optim (torch.optim): PyTorch optimiser for actor network
-    :attr gamma (float): discount rate gamma
-    """
+    """ DDPG
+        ** YOU NEED TO IMPLEMENT THE FUNCTIONS IN THIS CLASS **
+        :attr critic (FCNetwork): fully connected critic network
+        :attr critic_optim (torch.optim): PyTorch optimiser for critic network
+        :attr policy (FCNetwork): fully connected actor network for policy
+        :attr policy_optim (torch.optim): PyTorch optimiser for actor network
+        :attr gamma (float): discount rate gamma
+        """
 
     def __init__(
             self,
@@ -39,6 +37,7 @@ class DDPG(Agent):
             **kwargs,
     ):
         """
+        **YOU MUST IMPLEMENT THIS FUNCTION FOR Q4**
         :param action_space (gym.Space): environment's action space
         :param observation_space (gym.Space): environment's observation space
         :param gamma (float): discount rate gamma
@@ -52,23 +51,17 @@ class DDPG(Agent):
         STATE_SIZE = observation_space.shape[0]
         ACTION_SIZE = action_space.shape[0]
 
-        self.upper_action_bound = action_space.high[0]
-        self.lower_action_bound = action_space.low[0]
-
         # ######################################### #
         #  BUILD YOUR NETWORKS AND OPTIMIZERS HERE  #
         # ######################################### #
-        # self.actor = Actor(STATE_SIZE, policy_hidden_size, ACTION_SIZE)
         self.actor = FCNetwork(
-            (STATE_SIZE, *policy_hidden_size, ACTION_SIZE), output_activation=torch.nn.Tanh
+            (STATE_SIZE, *policy_hidden_size, ACTION_SIZE), output_activation=Tanh2
         )
         self.actor_target = FCNetwork(
-            (STATE_SIZE, *policy_hidden_size, ACTION_SIZE), output_activation=torch.nn.Tanh
+            (STATE_SIZE, *policy_hidden_size, ACTION_SIZE), output_activation=Tanh2
         )
 
         self.actor_target.hard_update(self.actor)
-        # self.critic = Critic(STATE_SIZE + ACTION_SIZE, critic_hidden_size)
-        # self.critic_target = Critic(STATE_SIZE + ACTION_SIZE, critic_hidden_size)
 
         self.critic = FCNetwork(
             (STATE_SIZE + ACTION_SIZE, *critic_hidden_size, 1), output_activation=None
@@ -83,7 +76,7 @@ class DDPG(Agent):
 
 
         # ############################################# #
-        # WRITE ANY HYPERPARAMETERS YOU MIGHT NEED HERE #
+        # WRITE ANY EXTRA HYPERPARAMETERS YOU NEED HERE #
         # ############################################# #
         self.gamma = gamma
         self.critic_learning_rate = critic_learning_rate
@@ -95,9 +88,11 @@ class DDPG(Agent):
         # ################################################### #
 
         ### PUT YOUR CODE HERE ###
-        I = torch.ones(ACTION_SIZE)
-        self.eta = Normal(0,0.1 * I).sample()
+        # Just need to take a sample and add some noise right??
+        action_space_sample = self.action_space.sample()
+        self.noise = Normal(0, 0.1 * torch.ones(len(action_space_sample)))
         # raise NotImplementedError("Needed for Q4")
+        
 
         # ############################### #
         # WRITE ANY AGENT PARAMETERS HERE #
@@ -114,13 +109,10 @@ class DDPG(Agent):
             }
         )
 
-
     def save(self, path: str, suffix: str = "") -> str:
         """Saves saveable PyTorch models under given path
-
         The models will be saved in directory found under given path in file "models_{suffix}.pt"
         where suffix is given by the optional parameter (by default empty string "")
-
         :param path (str): path to directory where to save models
         :param suffix (str, optional): suffix given to models file
         :return (str): path to file of saved models file
@@ -131,7 +123,6 @@ class DDPG(Agent):
 
     def restore(self, save_path: str):
         """Restores PyTorch models from models file given by path
-
         :param save_path (str): path to file containing saved models
         """
         dirname, _ = os.path.split(os.path.abspath(__file__))
@@ -143,99 +134,82 @@ class DDPG(Agent):
 
     def schedule_hyperparameters(self, timestep: int, max_timesteps: int):
         """Updates the hyperparameters
-
         **YOU MUST IMPLEMENT THIS FUNCTION FOR Q4**
-
         This function is called before every episode and allows you to schedule your
         hyperparameters.
-
         :param timestep (int): current timestep at the beginning of the episode
         :param max_timestep (int): maximum timesteps that the training loop will run for
         """
         ### PUT YOUR CODE HERE ###
-        # max_deduct, decay = 0.95, 0.07
-        # self.epsilon = 1.0 - (min(1.0, timestep / (decay * max_timesteps))) * max_deduct
+        # Tried a few things here but they just made it way worse!?
+        # raise NotImplementedError("Needed for Q4")
 
     def act(self, obs: np.ndarray, explore: bool):
         """Returns an action (should be called at every timestep)
-
         **YOU MUST IMPLEMENT THIS FUNCTION FOR Q4**
-        
         When explore is False you should select the best action possible (greedy). However, during exploration,
         you should be implementing exporation using the self.noise variable that you should have declared in the __init__.
         Use schedule_hyperparameters() for any hyperparameters that you want to change over time.
-
         :param obs (np.ndarray): observation vector from the environment
         :param explore (bool): flag indicating whether we should explore
         :return (sample from self.action_space): action the agent should perform
         """
-        ### PUT YOUR CODE HERE ###
-        # raise NotImplementedError("Needed for Q4")
-        
-        # convert obs to tensor
-        states = torch.from_numpy(np.array(obs)).float()
-        # Use FCNN actor to map states to actions 
-        actions = self.actor(states).detach().numpy()
-        if explore:
-            # use noise
-            new_actions = actions[0] + self.eta
-            new_actions.clamp(min=-2,max=2)
-            return new_actions
-        if not explore:
-            # greedy
-            return actions
+        obs = torch.tensor(obs, dtype = torch.float32)
 
+        if explore == False:
+            # Be greedy!
+            sample = self.actor.forward(obs).detach()
+            # sample = torch.argmax(actions).item()
+
+        if explore == True:
+            # Use self.noise
+            sample = (self.actor.forward(obs) + self.noise.sample()).detach()
+
+        sample.clamp(min=-2,max=2)
+
+        return sample
+        
     def update(self, batch: Transition) -> Dict[str, float]:
         """Update function for DQN
-
+        
         **YOU MUST IMPLEMENT THIS FUNCTION FOR Q4**
-
         This function is called after storing a transition in the replay buffer. This happens
-        every timestep. It should update your critic and actor networks, target networks with soft
-        updates, and return the q_loss and the policy_loss in the form of a dictionary.
-
+        every timestep. It should update your networks and return the q_loss and the policy_loss in the form of a
+        dictionary.
         :param batch (Transition): batch vector from replay buffer
         :return (Dict[str, float]): dictionary mapping from loss names to loss values
-        """
-        ### PUT YOUR CODE HERE ###
-        # raise NotImplementedError("Needed for Q4")
+        """        
+        q_loss = 0.0 #tensor.type(torch.float32)?????
+        p_loss = 0.0        
 
-        q_loss = 0.0
-        p_loss = 0.0
-        obs, action, nobs, rewards, done = batch
-        
-        with torch.no_grad():
-            nact = self.actor_target(nobs)
-            ncat_act_obs = torch.cat((nact,nobs),dim=1)  
-            n_q_value = self.critic_target(ncat_act_obs)
-        y = rewards + self.gamma*(1-done)*n_q_value
-        
-        # q_loss
-        cat_act_obs = torch.cat((action,obs),dim=1)
-        q = self.critic(cat_act_obs)
-        mseloss = torch.nn.MSELoss()
-        q_loss = mseloss(y,q)
+        # print("previous state shape", batch.next_states.shape)
+        # print("previous state type", batch.next_states.type)
+
+        actor_targ_output = self.actor_target.forward(batch.next_states)
+        critic_target_output = self.critic_target(torch.cat([batch.next_states,actor_targ_output], dim = 1))
+
+        y_i = batch.rewards + self.gamma * ((1-batch.done) * critic_target_output)
+
+        critic_output = self.critic.forward(torch.cat([batch.states,batch.actions], dim = 1))
+
+        q_loss = 1/len(batch.actions) * torch.sum((y_i - critic_output)**2)
+
         self.critic_optim.zero_grad()
-        q_loss.backward()
+        q_loss.backward(retain_graph = True) 
         self.critic_optim.step()
-        #q_loss = float(q_loss)
+
+        current_action = self.actor.forward(batch.states)
+        critic_output_p_loss = self.critic.forward(torch.cat([batch.states, current_action], dim = 1))
         
-        # p_loss
-        act = self.actor(obs)
-        cat_act_obs = torch.cat((act,obs),dim=1)
-        p_loss = -1*self.critic(cat_act_obs)
-        
-        self.policy_optim.zero_grad()
-        p_loss = torch.mean(p_loss)
+        p_loss = -1/len(batch.actions) * torch.sum(critic_output_p_loss)
+
+        self.policy_optim.zero_grad() 
         p_loss.backward()
+        # -torch.sum(critic_output).backward(retain_graph = True) ??
         self.policy_optim.step()
-        p_loss=float(p_loss)
 
-        # update parameters
-        self.critic_target.soft_update(self.critic, self.tau)
-        self.actor_target.soft_update(self.actor, self.tau)
+        self.critic_target.soft_update(self.critic,self.tau)
+        self.actor_target.soft_update(self.actor,self.tau)
 
-        return {
-            "q_loss": q_loss,
-            "p_loss": p_loss,
-        }
+        return {"q_loss": q_loss,
+                "p_loss": p_loss}

@@ -12,20 +12,20 @@ from rl2022.exercise5.matrix_game import create_penalty_game, create_climbing_ga
 
 PEN_CONFIG = {
     "eval_freq": 100,
-    "lr": 0.07,
+    "lr": 0.1,
     "epsilon": 0.9,
 }
 PEN_CONFIG.update(PENALTY_CONSTANTS)
 
 CLIMBING_CONFIG = {
     "eval_freq": 100,
-    "lr": 0.05,
+    "lr": 0.1,
     "epsilon": 0.9,
 }
 CLIMBING_CONFIG.update(CLIMBING_CONSTANTS)
 
 CONFIG = PEN_CONFIG
-# CONFIG = CLIMBING_CONFIG
+#CONFIG = CLIMBING_CONFIG
 
 
 def iql_eval(env, config, q_tables, max_steps=10, eval_episodes=500, render=False, output=True):
