@@ -56,11 +56,6 @@ class Agent(ABC):
         ### PUT YOUR CODE HERE ###
 
         best_action=0
-        #for a_index in range(self.n_acts):
-        #    max_q = max(self.q_table[(obs,a_index)],max_q)
-        #for a_index in range(self.n_acts):
-        #    if self.q_table[(obs,a_index)]==max_q:
-        #        best_action = a_index
         Q=np.zeros([1,self.n_acts])
         for a_index in range(self.n_acts):
             Q[0,a_index]=self.q_table[(obs,a_index)]
@@ -128,7 +123,7 @@ class QLearningAgent(Agent):
         for a_index in range(self.n_acts):
             Q[0,a_index]=self.q_table[(n_obs,a_index)]
         max_q = max(Q[0])
-        self.q_table[(obs,action)]=q + self.alpha*(reward + self.gamma*max_q - q)
+        self.q_table[(obs,action)]=float(q + self.alpha*(reward + self.gamma*max_q - q))
 
         return self.q_table[(obs, action)]
 

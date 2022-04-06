@@ -67,3 +67,4 @@ def test_montecarlo_0():
     assert type(agent.epsilon) == float
     assert agent.epsilon >= 0.0
     assert agent.epsilon <= 1.0
+test_qagent_1()

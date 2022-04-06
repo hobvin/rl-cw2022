@@ -128,14 +128,15 @@ class IndependentQLearningAgents(MultiAgent):
         for i in range(self.num_agents):
             q_table = self.q_tables[i]
             q = q_table[actions[i]]
-            max_q = 0
-            Q=np.zeros([1,self.n_acts[0]])
-            for a_index in range(int(self.n_acts[0])):
-                Q[0,a_index]=q_table[a_index]
-            max_q = max(Q[0])
-            q_table[actions[i]]=q + self.learning_rate*(rewards[i] + self.gamma*max_q - q)
-            #q_table[i] = q + self.learning_rate*(rewards[i] - q)
+            #max_q = 0
+            #Q=[]
+            #for a_index in range(int(self.n_acts[0])):
+            #    Q.append(q_table[a_index])
+            #max_q = max(Q) if not dones[i] else 0
+            #q_table[actions[i]]=q + self.learning_rate*(rewards[i] + self.gamma*max_q - q)
+            q_table[i] = q + self.learning_rate*(rewards[i] - q)
             self.q_tables[i] = q_table
+            updated_values.append(q_table)
         return updated_values
 
     def schedule_hyperparameters(self, timestep: int, max_timestep: int):

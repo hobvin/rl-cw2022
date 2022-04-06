@@ -14,14 +14,15 @@ CARTPOLE_CONFIG = {
     "eval_freq": 5000,
     "eval_episodes": 20,
     "hidden_size": (16, 16),
-    "learning_rate": 7e-4,
+    "learning_rate": 8e-4,
     "episode_length": 200,
     "max_time": 30 * 60,
+    "target_return": 195.0,
 }
 CARTPOLE_CONFIG.update(CARTPOLE_CONSTANTS)
 
 CONFIG = CARTPOLE_CONFIG
-# CONFIG = LUNARLANDER_CONFIG
+#CONFIG = LUNARLANDER_CONFIG
 
 
 def play_episode(

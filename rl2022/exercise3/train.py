@@ -6,39 +6,51 @@ from typing import List, Tuple
 import matplotlib.pyplot as plt
 import sys
 sys.path.append(r'M:\Postgraduate\RL\rl-cw2022')
-from rl2022.constants import EX3_DQN_CARTPOLE_CONSTANTS as CARTPOLE_CONSTANTS
-from rl2022.constants import EX3_LUNARLANDER_CONSTANTS as LUNARLANDER_CONSTANTS
 from rl2022.exercise3.agents import DQN
 from rl2022.exercise3.replay import ReplayBuffer
 
 RENDER = False # FALSE FOR FASTER TRAINING / TRUE TO VISUALIZE ENVIRONMENT DURING EVALUATION
 
-LUNARLANDER_CONFIG = {
-    "eval_freq": 1000,
-    "eval_episodes": 5,
-    "learning_rate": 3e-4, 
-    "hidden_size": (256,256), 
-    "target_update_freq": 1000,
-    "batch_size": 128, 
-    "buffer_capacity": int(1e6),
-    "plot_loss": False,
-}
-LUNARLANDER_CONFIG.update(LUNARLANDER_CONSTANTS)
+CARTPOLE_MAX_EPISODE_STEPS = 200 # USED FOR EVALUATION / DO NOT CHANGE
+LUNARLANDER_MAX_EPISODE_STEPS = 500 # USED FOR EVALUATION / DO NOT CHANGE
 
+### TUNE HYPERPARAMETERS HERE ###
 CARTPOLE_CONFIG = {
-    "eval_freq": 300,
-    "eval_episodes": 20,
-    "learning_rate": 1e-4,
-    "hidden_size": (128, 64),
-    "target_update_freq": 2000,
-    "batch_size": 16,
+    "env": "CartPole-v1",
+    "episode_length": 200,
+    "max_timesteps": 20000,
+    "max_time": 30 * 60,
+    "eval_freq": 1000, # HOW OFTEN WE EVALUATE (AND RENDER IF RENDER=TRUE)
+    "eval_episodes": 5,
+    "learning_rate": 1e-3, #1e-2, lit indicates 0.001?
+    "hidden_size": (128,64),
+    "target_update_freq": 500, #5000
+    "batch_size": 10,
+    "gamma": 0.99,
     "buffer_capacity": int(1e6),
     "plot_loss": True, # SET TRUE FOR 3.3 (Understanding the Loss)
+    "save_filename": None,
 }
-CARTPOLE_CONFIG.update(CARTPOLE_CONSTANTS)
 
+LUNARLANDER_CONFIG = {
+    "env": "LunarLander-v2",
+    "episode_length": 500,
+    "max_timesteps": 300000,
+    "max_time": 120 * 60,
+    "eval_freq": 5000, # default 5000
+    "eval_episodes": 5,  # DECREASING THIS MIGHT REDUCE EVALUATION ACCURACY; BUT MAKES IT EASIER TO SEE HOW THE POLICY EVOLVES OVER TIME (BY ENABLING RENDER ABOVE)
+    "learning_rate": 3e-4, #default 1e-2
+    "hidden_size": (128,128), # default (128,64)
+    "target_update_freq": 1000, #default 5000
+    "batch_size": 128, #default 10
+    "gamma": 0.99, #default 0.99
+    "buffer_capacity": int(1e6),
+    "plot_loss": False,
+    "save_filename": "dqn_lunarlander_latest.pt",
 
-# CONFIG = CARTPOLE_CONFIG
+}
+
+#CONFIG = CARTPOLE_CONFIG 
 CONFIG = LUNARLANDER_CONFIG
 
 
@@ -135,9 +147,9 @@ def train(env: gym.Env, config, output: bool = True) -> Tuple[List[float], List[
             if timesteps_elapsed % config["eval_freq"] < episode_timesteps:
                 eval_returns = 0
                 if config["env"] == "CartPole-v1":
-                    max_steps = config["episode_length"]
+                    max_steps = CARTPOLE_MAX_EPISODE_STEPS
                 elif config["env"] == "LunarLander-v2":
-                    max_steps = config["episode_length"]
+                    max_steps = LUNARLANDER_MAX_EPISODE_STEPS
                 else:
                     raise ValueError(f"Unknown environment {config['env']}")
 
@@ -168,11 +180,10 @@ def train(env: gym.Env, config, output: bool = True) -> Tuple[List[float], List[
         print("Plotting DQN loss...")
         losses = np.array(losses_all)
         x_values = config["batch_size"] + np.arange(len(losses))
-        plt.plot(x_values, losses, "-", alpha=0.7)
-        plt.xlabel("Timesteps", fontsize=10)
-        plt.ylabel("DQN Loss", fontsize=10)
-        plt.xticks(fontsize=25)
-        plt.yticks(fontsize=25)
+        plt.plot(x_values, losses, "-", alpha=0.7, label=f"DQN loss")
+        plt.legend(loc="best")
+        plt.xlabel("Timesteps")
+        plt.ylabel("Loss")
         plt.tight_layout(pad=0.3)
 
         plt.show()

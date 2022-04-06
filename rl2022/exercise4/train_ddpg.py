@@ -27,20 +27,21 @@ PENDULUM_CONFIG = {
 PENDULUM_CONFIG.update(PENDULUM_CONSTANTS)
 
 BIPEDAL_CONFIG = {
-    "eval_freq": 20000,
+    "eval_freq": 5000,
     "eval_episodes": 3,
-    "policy_learning_rate": 1e-4, # 1e-3
-    "critic_learning_rate": 1e-4, # 1e-3
-    "critic_hidden_size": [1000, 1000],
-    "policy_hidden_size": [1000, 1000],
-    "tau": 0.05,
-    "batch_size": 600,
+    "policy_learning_rate": 1e-3, # 1e-3
+    "critic_learning_rate": 1e-3, # 1e-3
+    "critic_hidden_size": [400, 300],
+    "policy_hidden_size": [400, 300],
+    "tau": 0.001,
+    "batch_size": 64,
     "buffer_capacity": int(1e8),
+    "gamma":0.99,
 }
 BIPEDAL_CONFIG.update(BIPEDAL_CONSTANTS)
 
-CONFIG = PENDULUM_CONFIG
-# CONFIG = BIPEDAL_CONFIG
+#CONFIG = PENDULUM_CONFIG
+CONFIG = BIPEDAL_CONFIG
 
 
 def play_episode(

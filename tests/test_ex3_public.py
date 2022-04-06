@@ -66,4 +66,4 @@ def test_restore_file_0():
     )
     agent.restore("dqn_lunarlander_latest.pt")
 
-
+test_restore_file_0()

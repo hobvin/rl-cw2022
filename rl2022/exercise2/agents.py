@@ -43,7 +43,7 @@ class Agent(ABC):
         self.epsilon: float = epsilon
         self.gamma: float = gamma
 
-        self.q_table: DefaultDict = defaultdict(lambda: 0)
+        self.q_table: DefaultDict = defaultdict(lambda: 0.0)
 
     def act(self, obs: int) -> int:
         """Implement the epsilon-greedy action selection here
@@ -56,13 +56,10 @@ class Agent(ABC):
         ### PUT YOUR CODE HERE ###
 
         best_action=0
-        #for a_index in range(self.n_acts):
-        #    max_q = max(self.q_table[(obs,a_index)],max_q)
-        #for a_index in range(self.n_acts):
-        #    if self.q_table[(obs,a_index)]==max_q:
-        #        best_action = a_index
         Q=np.zeros([1,self.n_acts])
+        
         for a_index in range(self.n_acts):
+            # print(type(self.q_table[(obs, a_index)]))
             Q[0,a_index]=self.q_table[(obs,a_index)]
         best_action=np.argmax(Q[0])
         ### RETURN AN ACTION HERE ###
@@ -129,7 +126,8 @@ class QLearningAgent(Agent):
             Q[0,a_index]=self.q_table[(n_obs,a_index)]
         max_q = max(Q[0])
         self.q_table[(obs,action)]=q + self.alpha*(reward + self.gamma*max_q - q)
-
+        self.q_table[(obs, action)] = float(self.q_table[(obs, action)])
+        # print(type(self.q_table[(obs, action)]))
         return self.q_table[(obs, action)]
 
     def schedule_hyperparameters(self, timestep: int, max_timestep: int):
@@ -184,18 +182,17 @@ class MonteCarloAgent(Agent):
         """
         updated_values = {}
         ### PUT YOUR CODE HERE ###
-        G: DefaultDict = defaultdict(lambda: 0)
-        for i in reversed(range(len(obses)-1)):
-            G[(obses[i],actions[i])] = rewards[i+1]+ self.gamma*G[(obses[i],actions[i])]
-        for i in range(len(obses)):
-            if (obses[i],actions[i]) not in self.sa_counts.keys():
-                self.sa_counts[(obses[i],actions[i])]=1
-            else:
-                self.sa_counts[(obses[i],actions[i])]+=1
-            if (obses[i],actions[i]) not in list(updated_values.keys())[:i]:
-                updated_values[(obses[i],actions[i])]=G[(obses[i],actions[i])]
-                #updated_values[(obses[i],actions[i])]=G[(obses[i],actions[i])]]/self.sa_counts[(obses[i],actions[i])]
-                self.q_table[(obses[i],actions[i])] = (self.q_table[(obses[i],actions[i])]*(self.sa_counts[(obses[i],actions[i])] - 1) + G[(obses[i],actions[i])])/self.sa_counts[(obses[i],actions[i])]
+        G = 0
+        sa_pairs = [(obses[i],actions[i]) for i in range(len(obses))]
+        for i in range(len(obses)-1,-1,-1):
+            G = rewards[i] + self.gamma*G
+            if sa_pairs[i] not in sa_pairs[:i]: # if sa_pairs does not appear before
+                if sa_pairs[i] not in self.sa_counts.keys():
+                    self.sa_counts[sa_pairs[i]]=1
+                else:
+                    self.sa_counts[sa_pairs[i]]+=1
+                self.q_table[sa_pairs[i]] = self.q_table[sa_pairs[i]] + ((G-self.q_table[sa_pairs[i]])/self.sa_counts[sa_pairs[i]])
+                updated_values[sa_pairs[i]] = self.q_table[sa_pairs[i]]
         return updated_values
 
     def schedule_hyperparameters(self, timestep: int, max_timestep: int):
