@@ -17,7 +17,7 @@ LUNARLANDER_CONFIG = {
     "eval_freq": 10,
     "eval_episodes": 5,
     "learning_rate": 3e-4, 
-    "hidden_size": (256,256), 
+    "hidden_size": (128,64), 
     "target_update_freq": 1000,
     "batch_size": 128, 
     "buffer_capacity": int(1e6),

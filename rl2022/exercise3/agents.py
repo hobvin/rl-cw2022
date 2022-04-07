@@ -224,7 +224,7 @@ class DQN(Agent):
         # preprocess Φ_t+1 = Φ(s_t+1)
         tgt_q_state_next = self.critics_target(next_state)
         # max q
-        tgt_q_max = tgt_q_state_next.max(axis=1)[0].detach().unsqueeze(axis=1)
+        tgt_q_max = tgt_q_state_next.max(axis=1)[0].detach().view(self.batch_size,1)
         
         y = reward + self.gamma * tgt_q_max * (1-done)
         q = self.critics_net(state).gather(dim=1, index=action.long())
