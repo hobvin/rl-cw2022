@@ -332,8 +332,8 @@ class Reinforce(Agent):
         prob = self.policy(state)
         # dist = torch.nn.functional.softmax(prob, dim=-1)
         acts_distribution = Categorical(prob)
-        action = acts_distribution.sample()
-        return action.item()
+        action = acts_distribution.sample().item()
+        return action
 
     def update(
         self, rewards: List[float], observations: List[np.ndarray], actions: List[int],

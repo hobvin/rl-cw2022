@@ -126,15 +126,16 @@ class IndependentQLearningAgents(MultiAgent):
         ### PUT YOUR CODE HERE ###
         #raise NotImplementedError("Needed for Q5")
         for i in range(self.num_agents):
+            Q=[]
             q_table = self.q_tables[i]
             q = q_table[actions[i]]
-            #max_q = 0
-            #Q=[]
-            #for a_index in range(int(self.n_acts[0])):
-            #    Q.append(q_table[a_index])
-            #max_q = max(Q) if not dones[i] else 0
-            #q_table[actions[i]]=q + self.learning_rate*(rewards[i] + self.gamma*max_q - q)
-            q_table[i] = q + self.learning_rate*(rewards[i] - q)
+            max_q = 0
+            
+            for a_index in range(int(self.n_acts[0])):
+                Q.append(q_table[a_index])
+            max_q = max(Q) if not dones[i] else 0
+            q_table[actions[i]]=q + self.learning_rate*(rewards[i] + self.gamma*max_q - q)
+            #q_table[i] = q + self.learning_rate*(rewards[i] - q)
             self.q_tables[i] = q_table
             updated_values.append(q_table)
         return updated_values
@@ -154,9 +155,8 @@ class IndependentQLearningAgents(MultiAgent):
         max_deduct, decay = 0.95, 0.07
         #self.learning_rate = 1.0 - (min(1.0, timestep / (decay * max_timestep))) * max_deduct
         self.epsilon = 1.0 - (min(1.0, timestep / (decay * max_timestep))) * max_deduct
-        self.learning_rate = max(0.07-0.007*timestep/max_timestep,0.01)
-        self.gamma = 0.5 - (min(0.5, timestep / (decay * max_timestep))) * max_deduct
-
+        #self.learning_rate = max(0.07-0.007*timestep/max_timestep,0.01)
+        self.gamma = 0.99
 class JointActionLearning(MultiAgent):
     """
     Agents using the Joint Action Learning algorithm with Opponent Modelling
@@ -274,5 +274,5 @@ class JointActionLearning(MultiAgent):
         max_deduct, decay = 0.95, 0.07
         #self.learning_rate = 1.0 - (min(1.0, timestep / (decay * max_timestep))) * max_deduct
         self.epsilon = 1.0 - (min(1.0, timestep / (decay * max_timestep))) * max_deduct
-        self.learning_rate = max(0.005-0.0005*timestep/max_timestep,0.001)
-        self.gamma = 0.8 - (min(0.8, timestep / (decay * max_timestep))) * max_deduct
+        #self.learning_rate = max(0.005-0.0005*timestep/max_timestep,0.001)
+        self.gamma = 0.99# - (min(0.8, timestep / (decay * max_timestep))) * max_deduct

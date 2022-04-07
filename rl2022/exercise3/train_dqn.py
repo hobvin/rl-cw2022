@@ -14,7 +14,7 @@ from rl2022.exercise3.replay import ReplayBuffer
 RENDER = False # FALSE FOR FASTER TRAINING / TRUE TO VISUALIZE ENVIRONMENT DURING EVALUATION
 
 LUNARLANDER_CONFIG = {
-    "eval_freq": 1000,
+    "eval_freq": 10,
     "eval_episodes": 5,
     "learning_rate": 3e-4, 
     "hidden_size": (128,64), 
@@ -28,7 +28,7 @@ LUNARLANDER_CONFIG.update(LUNARLANDER_CONSTANTS)
 CARTPOLE_CONFIG = {
     "eval_freq": 300,
     "eval_episodes": 20,
-    "learning_rate": 1e-4,
+    "learning_rate": 8e-5,
     "hidden_size": (128, 64),
     "target_update_freq": 2000,
     "batch_size": 16,
@@ -38,7 +38,7 @@ CARTPOLE_CONFIG = {
 CARTPOLE_CONFIG.update(CARTPOLE_CONSTANTS)
 
 
-# CONFIG = CARTPOLE_CONFIG
+#CONFIG = CARTPOLE_CONFIG
 CONFIG = LUNARLANDER_CONFIG
 
 
