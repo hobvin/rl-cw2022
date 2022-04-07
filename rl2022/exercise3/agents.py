@@ -218,6 +218,7 @@ class DQN(Agent):
         :return (Dict[str, float]): dictionary mapping from loss names to loss values
         """
         ### PUT YOUR CODE HERE ###
+        # code from paper
         self.update_counter+=1 # update counter
         state, action, next_state, reward, done = batch # sampled random minibatch of transitions
         self.critics_optim.zero_grad()
